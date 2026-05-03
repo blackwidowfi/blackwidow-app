@@ -1,0 +1,16 @@
+{
+  "projectName": "blackwidow-app",
+  "mode": "file-router",
+  "typescript": true,
+  "packageManager": "pnpm",
+  "includeExamples": true,
+  "tailwind": true,
+  "addOnOptions": {},
+  "envVarValues": {},
+  "git": true,
+  "install": false,
+  "routerOnly": false,
+  "version": 1,
+  "framework": "react",
+  "chosenAddOns": ["nitro", "tanstack-query", "posthog", "t3env", "shadcn", "oRPC"]
+}
