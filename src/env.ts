@@ -4,6 +4,10 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     SERVER_URL: z.url().optional(),
+    MODE: z.enum(["development", "staging", "production", "test"]),
+    PROD: z.boolean().optional(),
+    DEV: z.boolean().optional(),
+    SSR: z.boolean().optional(),
   },
 
   /**
