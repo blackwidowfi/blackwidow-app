@@ -36,6 +36,7 @@
     "lucide-react": "^0.577.0",
     "nitro": "npm:nitro-nightly@latest",
     "posthog-js": "^1.358.1",
+    "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-i18next": "^17.0.6",
@@ -62,15 +63,15 @@
     "vite-plus": "latest",
     "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
   },
+  "overrides": {
+    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+  },
   "packageManager": "pnpm@10.33.2",
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild",
       "lightningcss"
-    ],
-    "overrides": {
-      "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-      "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
-    }
+    ]
   }
 }
