@@ -4,12 +4,14 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     SERVER_URL: z.url().optional(),
+  },
+
+  shared: {
     MODE: z.enum(["development", "staging", "production", "test"]),
     PROD: z.boolean().optional(),
     DEV: z.boolean().optional(),
     SSR: z.boolean().optional(),
   },
-
   /**
    * The prefix that client-side variables must have. This is enforced both at
    * a type-level and at runtime.
