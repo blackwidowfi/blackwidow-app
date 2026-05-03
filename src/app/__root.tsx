@@ -1,8 +1,12 @@
 import "#/lib/translation/config";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
-import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
+import { HeadContent, Link, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+
+import en from "#/lib/translation/locales/en";
+import { useI18n } from "#/lib/translation/useI18n";
+import { Button } from "#/lib/ui/button";
 
 import Footer from "./-components/footer";
 import Header from "./-components/header";
@@ -15,8 +19,6 @@ interface MyRouterContext {
   queryClient: QueryClient;
 }
 
-const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getItem('theme');var mode=(stored==='light'||stored==='dark'||stored==='auto')?stored:'auto';var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var resolved=mode==='auto'?(prefersDark?'dark':'light'):mode;var root=document.documentElement;root.classList.remove('light','dark');root.classList.add(resolved);if(mode==='auto'){root.removeAttribute('data-theme')}else{root.setAttribute('data-theme',mode)}root.style.colorScheme=resolved;}catch(e){}})();`;
-
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
     meta: [
@@ -28,7 +30,47 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "TanStack Start Starter",
+        title: en.common.titles.site,
+      },
+      {
+        name: "description",
+        content: en.common.descriptions.site,
+      },
+      {
+        name: "keywords",
+        content: en.common.meta.keywords,
+      },
+      {
+        property: "og:type",
+        content: "website",
+      },
+      {
+        property: "og:title",
+        content: en.common.titles.site,
+      },
+      {
+        property: "og:description",
+        content: en.common.descriptions.site_short,
+      },
+      {
+        property: "og:site_name",
+        content: en.common.meta.og_site_name,
+      },
+      {
+        name: "twitter:card",
+        content: "summary_large_image",
+      },
+      {
+        name: "twitter:title",
+        content: en.common.titles.site,
+      },
+      {
+        name: "twitter:description",
+        content: en.common.descriptions.site_short,
+      },
+      {
+        name: "robots",
+        content: "index, follow",
       },
     ],
     links: [
@@ -36,19 +78,53 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         rel: "stylesheet",
         href: appCss,
       },
+      {
+        rel: "canonical",
+        href: "https://blackwidow.fi",
+      },
     ],
   }),
+  notFoundComponent: NotFound,
   shellComponent: RootDocument,
 });
 
+function NotFound() {
+  const { t } = useI18n(["common", "form"]);
+
+  return (
+    <main className="bg-background text-foreground relative flex min-h-[80vh] flex-col items-center justify-center px-4 text-center">
+      <div className="pointer-events-none fixed -top-32 -left-32 h-96 w-96 rounded-full bg-[radial-gradient(circle,oklch(0.88_0.23_155/0.07),transparent_70%)]" />
+      <div className="pointer-events-none fixed -right-24 -bottom-24 h-80 w-80 rounded-full bg-[radial-gradient(circle,oklch(0.88_0.23_155/0.04),transparent_70%)]" />
+
+      <div className="relative mb-8 opacity-60">
+        <img src="/images/logos/blackwidow-logo.jpg" alt="BlackWidow" width={64} height={64} />
+      </div>
+
+      <p className="text-primary mb-4 font-mono text-[0.68rem] font-medium tracking-[0.18em] uppercase">
+        {t("common:not_found.kicker")}
+      </p>
+
+      <h1 className="font-display mb-4 text-4xl font-bold text-white sm:text-5xl">
+        {t("common:titles.not_found")}
+      </h1>
+      <p className="text-muted-foreground mx-auto mb-10 max-w-sm text-sm leading-7">
+        {t("common:descriptions.not_found")}
+      </p>
+
+      <Button variant="outline" size="lg" asChild>
+        <Link to="/">{t("form:actions.back_to_home")}</Link>
+      </Button>
+    </main>
+  );
+}
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="scroll-smooth">
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
-      <body className="font-sans wrap-anywhere antialiased selection:bg-[rgba(79,184,178,0.24)]">
+      <body className="selection:bg-primary/20 font-sans wrap-anywhere antialiased">
         <PostHogProvider>
           <Header />
           {children}

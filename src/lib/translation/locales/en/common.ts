@@ -1,4 +1,149 @@
 export default {
-  titles: {},
-  descriptions: {},
+  titles: {
+    site: "BlackWidow — Autonomous Yield on Solana",
+    site_short: "BlackWidow",
+    not_found: "Position Not Found",
+  },
+  descriptions: {
+    site: "BlackWidow is an autonomous, risk-aware yield aggregation layer on Solana. Maximize returns while minimizing exposure — without manual monitoring.",
+    site_short:
+      "Autonomous, risk-aware yield aggregation on Solana. Maximize returns while minimizing exposure.",
+    not_found: "This route doesn't exist. The capital was probably redeployed somewhere safer.",
+  },
+  nav: {
+    brand: "BlackWidow",
+    how_it_works: "How It Works",
+    features: "Features",
+    solana: "Solana",
+    docs: "Docs",
+  },
+  footer: {
+    copyright: "BlackWidow. All rights reserved.",
+    disclaimer:
+      "BlackWidow is in development. This is not financial advice. DeFi protocols carry inherent risks. Always do your own research.",
+    follow_on_x: "Follow BlackWidow on X",
+    github_label: "BlackWidow on GitHub",
+  },
+  hero: {
+    badge: "Solana · Early Access",
+    headline_1: "Autonomous Yield.",
+    headline_2: "Zero Compromises.",
+    body: "BlackWidow allocates capital across Solana DeFi protocols for maximum yield — while a real-time risk engine monitors threats and exits positions before damage is done.",
+  },
+  problem: {
+    kicker: "The Problem",
+    heading: "DeFi Doesn't Protect You",
+    stat: "$600M+",
+    stat_label: "lost across DeFi protocols in April 2026 alone",
+    points: [
+      {
+        title: "No real-time risk",
+        desc: "Protocols get exploited in seconds. Existing optimizers have no live anomaly detection — by the time anyone notices, capital is gone.",
+      },
+      {
+        title: "Manual monitoring",
+        desc: "Users are expected to track oracle prices, TVL shifts, and liquidation risks across dozens of protocols simultaneously. It's impossible.",
+      },
+      {
+        title: "Yield without defense",
+        desc: "Yield optimizers maximize APY but treat risk as static. There is no integrated layer that actively defends capital in real time.",
+      },
+    ],
+  },
+  how_it_works: {
+    kicker: "How It Works",
+    heading: "Simple by Design",
+    steps: [
+      {
+        title: "Deploy capital",
+        desc: "Connect your wallet and select your risk tolerance. BlackWidow handles the rest.",
+      },
+      {
+        title: "Autonomous allocation",
+        desc: "Capital is continuously routed across Solana DeFi protocols to maximize yield within your parameters.",
+      },
+      {
+        title: "Risk engine guards",
+        desc: "Our proprietary engine monitors on-chain signals 24/7, auto-exiting positions the moment a threat is detected.",
+      },
+    ],
+  },
+  features: {
+    kicker: "Core Features",
+    heading: "Built to Protect and Grow",
+    items: [
+      {
+        title: "Risk engine",
+        desc: "Proprietary real-time anomaly detection across oracle prices, TVL shifts, and contract interactions.",
+      },
+      {
+        title: "Auto-exit",
+        desc: "Positions closed automatically the moment a threat threshold is crossed — no manual intervention needed.",
+      },
+      {
+        title: "Yield optimization",
+        desc: "Continuous allocation across Solana DeFi protocols, rebalancing to maximize APY within risk parameters.",
+      },
+      {
+        title: "On-chain signals",
+        desc: "Live monitoring of protocol health: TVL, liquidation cascades, oracle deviations, and contract spikes.",
+      },
+      {
+        title: "Agent-ready",
+        desc: "Purpose-built for AI agents deploying capital autonomously at scale — full programmatic control via API.",
+      },
+      {
+        title: "Non-custodial",
+        desc: "You always hold your keys. BlackWidow never takes custody of your assets.",
+      },
+    ],
+  },
+  risk_engine: {
+    kicker: "Risk Engine",
+    heading_1: "While Others Sleep,",
+    heading_2: "We Watch.",
+    body: "BlackWidow's risk engine continuously monitors every protocol it touches — tracking oracle deviations, TVL anomalies, smart contract interaction spikes, and liquidation cascade signals in real time.",
+    signals: [
+      "Oracle price deviation (>2σ)",
+      "TVL contraction velocity",
+      "Smart contract interaction spikes",
+      "Liquidation cascade probability",
+      "Stablecoin depeg signals",
+    ],
+    terminal_title: "blackwidow — risk-monitor",
+    rows: [
+      { label: "DRIFT/SOL oracle", value: "NOMINAL", time: "00:00:01" },
+      { label: "KelpDAO TVL", value: "NOMINAL", time: "00:00:01" },
+      { label: "Raydium pool depth", value: "WARN −4%", time: "00:00:02" },
+      { label: "Orca whirlpool", value: "NOMINAL", time: "00:00:02" },
+      { label: "mSOL depeg signal", value: "CLEAR", time: "00:00:03" },
+    ],
+  },
+  solana: {
+    kicker: "Built for Solana",
+    heading: "Speed. Cost. Conviction.",
+    body: "Solana's throughput and sub-cent fees make it the only viable chain for real-time autonomous yield management at scale.",
+    protocols_label: "Active protocol monitoring",
+    protocols: ["Jupiter"],
+    stats: [
+      { value: "< 400ms", label: "average block time" },
+      { value: "< $0.001", label: "median transaction fee" },
+      { value: "50,000+", label: "TPS theoretical throughput" },
+    ],
+  },
+  waitlist: {
+    kicker: "Early Access",
+    heading: "Get Early Access",
+    body: "BlackWidow is in private beta. Join the waitlist to be among the first to deploy capital through the protocol.",
+    note: "MVP stage · Solana devnet · Non-custodial · Audit in progress",
+  },
+  not_found: {
+    kicker: "404",
+    back_to_home: "Back to Home",
+  },
+  meta: {
+    keywords:
+      "BlackWidow, DeFi, Solana, yield aggregator, autonomous yield, risk management, crypto",
+    og_site_name: "BlackWidow",
+  },
 } as const;
