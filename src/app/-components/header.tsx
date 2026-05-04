@@ -5,45 +5,49 @@ import { useI18n } from "#/lib/translation/useI18n";
 import { Button } from "#/lib/ui/button";
 import { cn } from "#/lib/ui/utils";
 
-const getNavLinks = (t: Translate) => [
+import { WalletButton } from "./wallet-button";
+
+const getAnchorLinks = (t: Translate) => [
   { href: "#how-it-works", label: t("common:nav.how_it_works") },
   { href: "#features", label: t("common:nav.features") },
   { href: "#solana", label: t("common:nav.solana") },
 ];
 
+const navLinkClass = cn(
+  "text-muted-foreground duration-160ms relative no-underline transition-colors",
+  "after:absolute after:inset-x-0 after:-bottom-1.5 after:h-[1.5px] after:origin-left after:scale-x-0 after:transition-transform after:duration-160",
+  "after:from-primary after:to-ring after:bg-linear-to-r",
+  "hover:text-foreground hover:after:scale-x-100",
+);
+
 export default function Header() {
   const { t } = useI18n(["common", "form"]);
-  const navLinks = getNavLinks(t);
+  const anchorLinks = getAnchorLinks(t);
 
   return (
     <header className="border-border bg-background/88 sticky top-0 z-50 border-b backdrop-blur-lg">
       <nav className="container flex items-center gap-x-3 gap-y-2 py-3 sm:py-4">
         <Link to="/" className="inline-flex items-center gap-2.5 no-underline">
           <img src="/images/logos/blackwidow-logo.jpg" alt="BlackWidow" width={26} height={26} />
-
           <span className="font-display text-foreground text-sm font-semibold tracking-tight">
             {t("common:nav.brand")}
           </span>
         </Link>
 
         <div className="ml-6 hidden items-center gap-6 text-sm font-medium sm:flex">
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "text-muted-foreground duration-160ms relative no-underline transition-colors",
-                "after:absolute after:inset-x-0 after:-bottom-1.5 after:h-[1.5px] after:origin-left after:scale-x-0 after:transition-transform after:duration-160",
-                "after:from-primary after:to-ring after:bg-linear-to-r",
-                "hover:text-foreground",
-                "hover:after:scale-x-100",
-              )}
-            >
+          {anchorLinks.map((link) => (
+            <a key={link.href} href={link.href} className={navLinkClass}>
               {link.label}
             </a>
           ))}
+
+          <Link to="/demo" className={navLinkClass}>
+            {t("common:nav.demo")}
+          </Link>
         </div>
+
         <div className="ml-auto flex items-center gap-2">
+          <WalletButton />
           <Button size="sm" className="rounded px-4 text-xs" asChild>
             <a href="#waitlist" className="no-underline">
               {t("form:actions.launch_app")}

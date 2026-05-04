@@ -11,6 +11,7 @@ import { Button } from "#/lib/ui/button";
 import Footer from "./-components/footer";
 import Header from "./-components/header";
 import PostHogProvider from "./-integrations/posthog/provider";
+import SolanaProvider from "./-integrations/solana/provider";
 import TanStackQueryDevtools from "./-integrations/tanstack-query/devtools";
 
 import appCss from "./styles.css?url";
@@ -126,21 +127,23 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="selection:bg-primary/20 font-sans wrap-anywhere antialiased">
         <PostHogProvider>
-          <Header />
-          {children}
-          <Footer />
-          <TanStackDevtools
-            config={{
-              position: "bottom-right",
-            }}
-            plugins={[
-              {
-                name: "Tanstack Router",
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-              TanStackQueryDevtools,
-            ]}
-          />
+          <SolanaProvider>
+            <Header />
+            {children}
+            <Footer />
+            <TanStackDevtools
+              config={{
+                position: "bottom-right",
+              }}
+              plugins={[
+                {
+                  name: "Tanstack Router",
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+                TanStackQueryDevtools,
+              ]}
+            />
+          </SolanaProvider>
         </PostHogProvider>
         <Scripts />
       </body>
