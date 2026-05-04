@@ -10,7 +10,7 @@ export default function Footer() {
       <div className="container flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2.5">
-            <img src="/images/logos/blackwidow-logo.jpg" alt="BlackWidow" width={22} height={22} />
+            <img src="/images/logos/blackwidow-logo.png" alt="BlackWidow" width={22} height={22} />
             <span className="font-display text-foreground text-sm font-semibold">
               {t("nav.brand")}
             </span>

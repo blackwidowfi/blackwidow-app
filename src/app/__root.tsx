@@ -98,7 +98,7 @@ function NotFound() {
       <div className="pointer-events-none fixed -right-24 -bottom-24 h-80 w-80 rounded-full bg-[radial-gradient(circle,oklch(0.88_0.23_155/0.04),transparent_70%)]" />
 
       <div className="relative mb-8 opacity-60">
-        <img src="/images/logos/blackwidow-logo.jpg" alt="BlackWidow" width={64} height={64} />
+        <img src="/images/logos/blackwidow-logo.png" alt="BlackWidow" width={64} height={64} />
       </div>
 
       <p className="text-primary mb-4 font-mono text-[0.68rem] font-medium tracking-[0.18em] uppercase">
