@@ -33,12 +33,12 @@ export default {
   },
   problem: {
     kicker: "The Problem",
-    heading: "DeFi Doesn't Protect You",
-    stat: "$600M+",
+    heading: "DeFi is NOT safe",
+    stat: "$600,000,000+",
     stat_label: "lost across DeFi protocols in April 2026 alone",
     points: [
       {
-        title: "No real-time risk",
+        title: "No real-time risk protection",
         desc: "Protocols get exploited in seconds. Existing optimizers have no live anomaly detection — by the time anyone notices, capital is gone.",
       },
       {
