@@ -1,6 +1,6 @@
 export default {
   labels: {
-    waitlist_email: "hello@blackwidow.fi",
+    waitlist_email: "rafael@adriclabs.com",
   },
   actions: {
     launch_app: "Launch App",

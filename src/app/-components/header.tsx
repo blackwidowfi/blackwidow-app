@@ -8,9 +8,9 @@ import { cn } from "#/lib/ui/utils";
 import { WalletButton } from "./wallet-button";
 
 const getAnchorLinks = (t: Translate) => [
-  { href: "#how-it-works", label: t("common:nav.how_it_works") },
-  { href: "#features", label: t("common:nav.features") },
-  { href: "#solana", label: t("common:nav.solana") },
+  { href: "/#how-it-works", label: t("common:nav.how_it_works") },
+  { href: "/#features", label: t("common:nav.features") },
+  { href: "/#solana", label: t("common:nav.solana") },
 ];
 
 const navLinkClass = cn(
@@ -28,7 +28,12 @@ export default function Header() {
     <header className="border-border bg-background/88 sticky top-0 z-50 border-b backdrop-blur-lg">
       <nav className="container flex items-center gap-x-3 gap-y-2 py-3 sm:py-4">
         <Link to="/" className="inline-flex items-center gap-2.5 no-underline">
-          <img src="/images/logos/blackwidow-logo.png" alt="BlackWidow" width={26} height={26} />
+          <img
+            src="/images/logos/blackwidow-logo.png"
+            alt={t("titles.site_short")}
+            width={26}
+            height={26}
+          />
           <span className="font-display text-foreground text-sm font-semibold tracking-tight">
             {t("common:nav.brand")}
           </span>

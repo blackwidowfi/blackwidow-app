@@ -1,4 +1,4 @@
-# BlackWidow
+# Blackwidow
 
 Autonomous, risk-aware yield aggregation on Solana.
 

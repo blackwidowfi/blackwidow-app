@@ -1,17 +1,17 @@
 export default {
   titles: {
-    site: "BlackWidow — Autonomous Yield on Solana",
-    site_short: "BlackWidow",
+    site: "Blackwidow: Autonomous Yield Optimization on Solana",
+    site_short: "Blackwidow",
     not_found: "Position Not Found",
   },
   descriptions: {
-    site: "BlackWidow is an autonomous, risk-aware yield aggregation layer on Solana. Maximize returns while minimizing exposure — without manual monitoring.",
+    site: "Blackwidow is an autonomous, risk-aware yield aggregation layer on Solana. Maximize returns while minimizing exposure — without manual monitoring.",
     site_short:
       "Autonomous, risk-aware yield aggregation on Solana. Maximize returns while minimizing exposure.",
     not_found: "This route doesn't exist. The capital was probably redeployed somewhere safer.",
   },
   nav: {
-    brand: "BlackWidow",
+    brand: "Blackwidow",
     how_it_works: "How It Works",
     features: "Features",
     solana: "Solana",
@@ -19,17 +19,17 @@ export default {
     demo: "Demo",
   },
   footer: {
-    copyright: "BlackWidow. All rights reserved.",
+    copyright: "Blackwidow. All rights reserved.",
     disclaimer:
-      "BlackWidow is in development. This is not financial advice. DeFi protocols carry inherent risks. Always do your own research.",
-    follow_on_x: "Follow BlackWidow on X",
-    github_label: "BlackWidow on GitHub",
+      "Blackwidow is in development. This is not financial advice. DeFi protocols carry inherent risks. Always do your own research.",
+    follow_on_x: "Follow Blackwidow on X",
+    github_label: "Blackwidow on GitHub",
   },
   hero: {
     badge: "Solana · Early Access",
     headline_1: "Autonomous Yield.",
     headline_2: "Zero Compromises.",
-    body: "BlackWidow allocates capital across Solana DeFi protocols for maximum yield — while a real-time risk engine monitors threats and exits positions before damage is done.",
+    body: "Blackwidow allocates capital across Solana DeFi protocols for maximum yield — while a real-time risk engine monitors threats and exits positions before damage is done.",
   },
   problem: {
     kicker: "The Problem",
@@ -57,7 +57,7 @@ export default {
     steps: [
       {
         title: "Deploy capital",
-        desc: "Connect your wallet and select your risk tolerance. BlackWidow handles the rest.",
+        desc: "Connect your wallet and select your risk tolerance. Blackwidow handles the rest.",
       },
       {
         title: "Autonomous allocation",
@@ -95,7 +95,7 @@ export default {
       },
       {
         title: "Non-custodial",
-        desc: "You always hold your keys. BlackWidow never takes custody of your assets.",
+        desc: "You always hold your keys. Blackwidow never takes custody of your assets.",
       },
     ],
   },
@@ -103,7 +103,7 @@ export default {
     kicker: "Risk Engine",
     heading_1: "While Others Sleep,",
     heading_2: "We Watch.",
-    body: "BlackWidow's risk engine continuously monitors every protocol it touches — tracking oracle deviations, TVL anomalies, smart contract interaction spikes, and liquidation cascade signals in real time.",
+    body: "Blackwidow's risk engine continuously monitors every protocol it touches — tracking oracle deviations, TVL anomalies, smart contract interaction spikes, and liquidation cascade signals in real time.",
     signals: [
       "Oracle price deviation (>2σ)",
       "TVL contraction velocity",
@@ -135,13 +135,13 @@ export default {
   waitlist: {
     kicker: "Early Access",
     heading: "Get Early Access",
-    body: "BlackWidow is in private beta. Join the waitlist to be among the first to deploy capital through the protocol.",
+    body: "Blackwidow is in private beta. Join the waitlist to be among the first to deploy capital through the protocol.",
     note: "MVP stage · Solana devnet · Non-custodial · Audit in progress",
   },
   demo: {
     kicker: "Devnet Demo",
     heading: "Deploy Capital",
-    body: "Connect your Phantom wallet and explore BlackWidow's autonomous yield engine on Solana devnet.",
+    body: "Connect your Phantom wallet and explore Blackwidow's autonomous yield engine on Solana devnet.",
     connect_prompt: "Connect your wallet to get started.",
     wallet_connected: "Wallet connected",
     network: "Solana Devnet",
@@ -168,7 +168,7 @@ export default {
   },
   meta: {
     keywords:
-      "BlackWidow, DeFi, Solana, yield aggregator, autonomous yield, risk management, crypto",
-    og_site_name: "BlackWidow",
+      "Blackwidow, DeFi, Solana, yield aggregator, autonomous yield, risk management, crypto",
+    og_site_name: "Blackwidow",
   },
 } as const;

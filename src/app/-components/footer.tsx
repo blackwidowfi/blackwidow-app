@@ -10,7 +10,12 @@ export default function Footer() {
       <div className="container flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2.5">
-            <img src="/images/logos/blackwidow-logo.png" alt="BlackWidow" width={22} height={22} />
+            <img
+              src="/images/logos/blackwidow-logo.png"
+              alt={t("titles.site_short")}
+              width={22}
+              height={22}
+            />
             <span className="font-display text-foreground text-sm font-semibold">
               {t("nav.brand")}
             </span>
@@ -25,7 +30,7 @@ export default function Footer() {
 
           <div className="flex items-center gap-6 text-sm">
             <a
-              href="https://x.com/blackwidowfi"
+              href="https://x.com/blackwidowdefi"
               target="_blank"
               rel="noreferrer"
               className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 transition"
@@ -39,7 +44,7 @@ export default function Footer() {
               </svg>
             </a>
             <a
-              href="https://github.com/blackwidowfi"
+              href="https://github.com/blackwidowfi/blackwidow-app"
               target="_blank"
               rel="noreferrer"
               className="text-muted-foreground hover:text-foreground rounded-lg p-1.5 transition"
