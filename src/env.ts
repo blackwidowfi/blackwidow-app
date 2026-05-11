@@ -11,6 +11,7 @@ export const env = createEnv({
     PROD: z.boolean().optional(),
     DEV: z.boolean().optional(),
     SSR: z.boolean().optional(),
+    SOLANA_NETWORK: z.enum(["devnet", "testnet", "mainnet-beta"]).default("devnet"),
   },
   /**
    * The prefix that client-side variables must have. This is enforced both at
