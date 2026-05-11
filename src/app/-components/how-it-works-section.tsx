@@ -47,9 +47,17 @@ export function HowItWorksSection() {
           {steps.map(({ title, desc }, i) => {
             const Icon = ICONS[i];
             return (
-              <div key={title} className="border-border flex items-start gap-5 border-l pl-6">
-                <div className="border-border text-foreground flex h-9 w-9 shrink-0 items-center justify-center rounded-full border font-mono text-sm tabular-nums">
-                  {i + 1}
+              <div key={title} className="flex items-start gap-5">
+                <div className="flex shrink-0 flex-col items-center">
+                  <div className="border-border text-foreground flex h-9 w-9 items-center justify-center rounded-full border font-mono text-sm tabular-nums">
+                    {i + 1}
+                  </div>
+                  {i < steps.length - 1 && (
+                    <div
+                      className="mt-2 h-8 w-px bg-[linear-gradient(180deg,var(--ring),transparent)]"
+                      style={{ minHeight: "calc(var(--spacing) * 8 + 2rem)" }}
+                    />
+                  )}
                 </div>
                 <div>
                   <div className="text-muted-foreground mb-2">

@@ -54,7 +54,7 @@ export default function Header() {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <WalletButton />
+          <WalletButton className="max-sm:hidden" />
           <Button size="sm" className="rounded px-4 text-xs" asChild>
             <a href="/#waitlist" className="no-underline">
               {t("form:actions.launch_app")}

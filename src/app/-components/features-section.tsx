@@ -36,7 +36,7 @@ export function FeaturesSection() {
           </h2>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map(({ title, desc }, i) => {
             const Icon = ICONS[i];
             return (

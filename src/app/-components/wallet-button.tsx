@@ -2,12 +2,13 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { Loader2, Wallet } from "lucide-react";
 
 import { Button } from "#/lib/ui/button";
+import { cn } from "#/lib/ui/utils";
 
 function truncate(address: string) {
   return `${address.slice(0, 4)}…${address.slice(-4)}`;
 }
 
-export function WalletButton() {
+export function WalletButton({ className, ...rest }: React.ComponentProps<"button">) {
   const wallet = useWallet();
 
   if (wallet.connecting) {
@@ -24,8 +25,9 @@ export function WalletButton() {
       <Button
         size="sm"
         variant="outline"
-        className="rounded px-4 font-mono text-xs"
+        className={cn("rounded px-4 font-mono text-xs", className)}
         onClick={() => wallet.disconnect()}
+        {...rest}
       >
         <Wallet size={13} />
         {truncate(wallet.publicKey.toBase58())}
