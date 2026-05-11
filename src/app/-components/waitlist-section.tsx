@@ -1,3 +1,4 @@
+import { env } from "#/env";
 import { useI18n } from "#/lib/translation/useI18n";
 import { Button } from "#/lib/ui/button";
 
@@ -28,7 +29,7 @@ export function WaitlistSection() {
         </Button>
 
         <p className="text-muted-foreground/40 mt-6 font-mono text-xs">
-          {t("common:waitlist.note")}
+          {t("common:waitlist.note", { network: env.SOLANA_NETWORK })}
         </p>
       </div>
     </section>

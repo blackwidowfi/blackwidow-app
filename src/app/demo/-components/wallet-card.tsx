@@ -1,46 +1,44 @@
-import { useCallback, useState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { Loader2, Wallet, Zap } from "lucide-react";
 
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, Wallet } from "lucide-react";
-
+import { env } from "#/env";
 import { useI18n } from "#/lib/translation/useI18n";
 import { Button } from "#/lib/ui/button";
 import { Card } from "#/lib/ui/card";
+import { cn } from "#/lib/ui/utils";
 
-import { solBalanceKey, useSolBalance } from "../-hooks/use-sol-balance";
+import { useSolBalance } from "../-hooks/use-sol-balance";
+import { SIMULATION_PHASES, type SimulationPhase } from "../-utils/entities";
 import { formatSol } from "../-utils/format-sol";
 import { WalletButton } from "../../-components/wallet-button";
 
-export function WalletCard() {
-  const { t } = useI18n("common");
-  const { connection } = useConnection();
+interface WalletCardProps {
+  simulationPhase: SimulationPhase;
+  onDeploy: () => void;
+}
+
+const PHASE_DOT: Record<Exclude<SimulationPhase, "idle">, string> = {
+  allocating: "",
+  monitoring: "bg-primary shadow-[0_0_5px_oklch(0.9395_0.2231_120.04/0.3)] animate-pulse-dot",
+  risk_detected:
+    "bg-destructive-foreground shadow-[0_0_5px_oklch(0.577_0.245_27.325/0.5)] animate-risk-flash",
+  reallocating:
+    "bg-[oklch(0.79_0.15_85)] shadow-[0_0_5px_oklch(0.79_0.15_85/0.4)] animate-pulse-dot",
+};
+
+const PHASE_LABEL_KEY = {
+  allocating: "demo.deploy_status_allocating",
+  monitoring: "demo.deploy_status_monitoring",
+  risk_detected: "demo.deploy_status_risk",
+  reallocating: "demo.deploy_status_reallocating",
+} as const;
+
+export function WalletCard({ simulationPhase, onDeploy }: WalletCardProps) {
+  const { t } = useI18n(["common", "form"]);
   const { publicKey, connected } = useWallet();
-  const queryClient = useQueryClient();
-
   const { data: balance, isFetching: balanceLoading } = useSolBalance();
-  const balanceKey = solBalanceKey(publicKey?.toBase58());
 
-  const [airdropState, setAirdropState] = useState<"idle" | "loading" | "success" | "error">(
-    "idle",
-  );
-
-  const requestAirdrop = useCallback(async () => {
-    if (!publicKey) return;
-    setAirdropState("loading");
-    try {
-      const sig = await connection.requestAirdrop(publicKey, LAMPORTS_PER_SOL);
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-      await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight });
-      await queryClient.invalidateQueries({ queryKey: balanceKey });
-      setAirdropState("success");
-      setTimeout(() => setAirdropState("idle"), 3000);
-    } catch {
-      setAirdropState("error");
-      setTimeout(() => setAirdropState("idle"), 3000);
-    }
-  }, [publicKey, connection, queryClient, balanceKey]);
+  const isAllocating = simulationPhase === SIMULATION_PHASES.ALLOCATING;
 
   return (
     <Card className="bg-card border-border gap-0 rounded-2xl border p-6">
@@ -54,7 +52,9 @@ export function WalletCard() {
             <span className="bg-primary size-1.5 rounded-full shadow-[0_0_5px_oklch(0.9395_0.2231_120.04/0.3)]" />
           )}
         </div>
-        <span className="text-muted-foreground font-mono text-xs">{t("demo.network")}</span>
+        <span className="text-muted-foreground font-mono text-xs">
+          {t("demo.network", { network: env.SOLANA_NETWORK })}
+        </span>
       </div>
 
       {connected && publicKey ? (
@@ -64,40 +64,42 @@ export function WalletCard() {
             <p className="font-mono text-xs break-all text-white/70">{publicKey.toBase58()}</p>
           </div>
 
-          <div className="border-border flex items-end justify-between border-t pt-4">
-            <div>
-              <p className="text-muted-foreground mb-1 font-mono text-xs">
-                {t("demo.balance_label")}
-              </p>
-              <p className="font-mono text-2xl font-medium text-white">
-                {balanceLoading ? (
-                  <span className="text-muted-foreground text-sm">{t("demo.balance_loading")}</span>
-                ) : (
-                  formatSol(balance)
-                )}
-              </p>
-            </div>
-
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs"
-              disabled={airdropState === "loading"}
-              onClick={requestAirdrop}
-            >
-              {airdropState === "loading" ? (
-                <>
-                  <Loader2 size={12} className="animate-spin" />
-                  {t("demo.airdrop_loading")}
-                </>
-              ) : airdropState === "success" ? (
-                t("demo.airdrop_success")
-              ) : airdropState === "error" ? (
-                t("demo.airdrop_error")
+          <div className="border-border border-t pt-4">
+            <p className="text-muted-foreground mb-1 font-mono text-xs">
+              {t("demo.balance_label")}
+            </p>
+            <p className="font-mono text-2xl font-medium text-white">
+              {balanceLoading ? (
+                <span className="text-muted-foreground text-sm">{t("demo.balance_loading")}</span>
               ) : (
-                t("demo.airdrop_button")
+                formatSol(balance)
+              )}
+            </p>
+          </div>
+
+          <div className="border-border space-y-3 border-t pt-4">
+            <Button className="w-full" onClick={onDeploy} disabled={isAllocating}>
+              {isAllocating ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  {t("demo.deploy_status_allocating")}
+                </>
+              ) : (
+                <>
+                  <Zap size={14} />
+                  {t("form:actions.deploy_capital")}
+                </>
               )}
             </Button>
+
+            {simulationPhase !== SIMULATION_PHASES.IDLE && !isAllocating && (
+              <div className={cn("flex items-center gap-2.5", isAllocating && "opacity-50")}>
+                <span className={cn("size-1.5 rounded-full", PHASE_DOT[simulationPhase])} />
+                <span className="font-mono text-xs text-white/70">
+                  {t(PHASE_LABEL_KEY[simulationPhase])}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       ) : (

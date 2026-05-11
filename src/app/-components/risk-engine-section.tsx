@@ -1,4 +1,5 @@
 import { useI18n } from "#/lib/translation/useI18n";
+import { cn } from "#/lib/ui/utils";
 
 const TERMINAL_STATUSES = ["green", "green", "yellow", "green", "green"] as const;
 
@@ -30,7 +31,10 @@ export function RiskEngineSection() {
             {signals.map((signal) => (
               <li key={signal} className="text-foreground flex items-center gap-3 text-sm">
                 <span
-                  className={`animate-pulse-dot size-1.5 shrink-0 rounded-full ${DOT_CLASSES.green}`}
+                  className={cn(
+                    "animate-pulse-dot size-1.5 shrink-0 rounded-full",
+                    DOT_CLASSES.green,
+                  )}
                 />
                 {signal}
               </li>
@@ -40,9 +44,9 @@ export function RiskEngineSection() {
 
         <div className="border-ring/35 text-primary/50 rounded-xl border bg-neutral-950 p-5 font-mono text-xs">
           <div className="border-border mb-4 flex items-center gap-2 border-b pb-3">
-            <span className={`size-1.5 shrink-0 rounded-full ${DOT_CLASSES.red}`} />
-            <span className={`size-1.5 shrink-0 rounded-full ${DOT_CLASSES.yellow}`} />
-            <span className={`size-1.5 shrink-0 rounded-full ${DOT_CLASSES.green}`} />
+            <span className={cn("size-1.5 shrink-0 rounded-full", DOT_CLASSES.red)} />
+            <span className={cn("size-1.5 shrink-0 rounded-full", DOT_CLASSES.yellow)} />
+            <span className={cn("size-1.5 shrink-0 rounded-full", DOT_CLASSES.green)} />
             <span className="text-muted-foreground/50 ml-3 text-xs">
               {t("risk_engine.terminal_title")}
             </span>
@@ -54,7 +58,7 @@ export function RiskEngineSection() {
                 key={label}
                 className="border-primary/20 flex items-center gap-3 border-b py-1.5 last:border-0"
               >
-                <span className={`size-1.5 shrink-0 rounded-full ${DOT_CLASSES[status]}`} />
+                <span className={cn("size-1.5 shrink-0 rounded-full", DOT_CLASSES[status])} />
                 <span className="min-w-37.5 text-white/50">{label}</span>
                 <span className={status === "green" ? "text-foreground" : "text-muted-foreground"}>
                   {value}

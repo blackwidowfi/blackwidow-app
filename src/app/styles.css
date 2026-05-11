@@ -225,3 +225,36 @@ body {
     }
   }
 }
+
+@theme {
+  --animate-scan-line: scan-line 2.5s linear infinite;
+  @keyframes scan-line {
+    0% {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    8% {
+      opacity: 1;
+    }
+    92% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(300%);
+      opacity: 0;
+    }
+  }
+}
+
+@theme {
+  --animate-risk-flash: risk-flash 0.65s ease-in-out infinite;
+  @keyframes risk-flash {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+}
