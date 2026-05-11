@@ -78,8 +78,8 @@ export default {
         desc: "Proprietary real-time anomaly detection across oracle prices, TVL shifts, and contract interactions.",
       },
       {
-        title: "Auto-exit",
-        desc: "Positions closed automatically the moment a threat threshold is crossed — no manual intervention needed.",
+        title: "AI powered risk intelligence",
+        desc: "AI-driven analysis of verified external sources and real-time on-chain data to detect threats, anomalies and elevated-risk conditions before capital is exposed.",
       },
       {
         title: "Yield optimization",
@@ -103,7 +103,7 @@ export default {
     kicker: "Risk Engine",
     heading_1: "While Others Sleep,",
     heading_2: "We Watch.",
-    body: "Blackwidow's risk engine continuously monitors every protocol it touches — tracking oracle deviations, TVL anomalies, smart contract interaction spikes, and liquidation cascade signals in real time.",
+    body: "Blackwidow's risk engine continuously monitors every protocol it touches — tracking oracle deviations, TVL anomalies, volume risks, currency changes, smart contract interaction spikes and liquidation cascada signals, besides a dedicated AI tracking external sources in real time.",
     signals: [
       "Oracle price deviation (>2σ)",
       "TVL contraction velocity",
@@ -125,16 +125,16 @@ export default {
     heading: "Speed. Cost. Conviction.",
     body: "Solana's throughput and sub-cent fees make it the only viable chain for real-time autonomous yield management at scale.",
     protocols_label: "Active protocol monitoring",
-    protocols: ["Jupiter"],
+    protocols: ["Jupiter", "Meteora", "Kamino"],
     stats: [
-      { value: "< 400ms", label: "average block time" },
-      { value: "< $0.001", label: "median transaction fee" },
+      { value: "~400ms", label: "average block time" },
+      { value: "< $0.01", label: "median transaction fee" },
       { value: "50,000+", label: "TPS theoretical throughput" },
     ],
   },
   waitlist: {
     kicker: "Early Access",
-    heading: "Get Early Access",
+    heading: "Your money on the web, safe",
     body: "Blackwidow is in private beta. Join the waitlist to be among the first to deploy capital through the protocol.",
     note: "MVP stage · Solana {{network}} · Non-custodial · Audit in progress",
   },

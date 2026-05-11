@@ -2,7 +2,7 @@ import {
   Activity,
   Bot,
   KeyRound,
-  LogOut,
+  Sparkles,
   ShieldAlert,
   TrendingUp,
   type LucideIcon,
@@ -13,7 +13,7 @@ import { Card } from "#/lib/ui/card";
 
 const ICONS: readonly LucideIcon[] = [
   ShieldAlert,
-  LogOut,
+  Sparkles,
   TrendingUp,
   Activity,
   Bot,
