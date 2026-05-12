@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from "react";
 
 import { useWallet } from "@solana/wallet-adapter-react";
-import { ExternalLink, Loader2, Wallet, Zap } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, ExternalLink, Loader2, Wallet } from "lucide-react";
 
 import { env } from "#/env";
 import { useI18n } from "#/lib/translation/useI18n";
@@ -9,10 +9,13 @@ import { Button } from "#/lib/ui/button";
 import { Card } from "#/lib/ui/card";
 import { cn } from "#/lib/ui/utils";
 
-import { useDepositSol, type DepositSolResult } from "../-hooks/use-deposit-sol";
+import { useDepositSol } from "../-hooks/use-deposit-sol";
 import { useSolBalance } from "../-hooks/use-sol-balance";
+import { useWithdrawAvailability } from "../-hooks/use-withdraw-availability";
+import { useWithdrawSol } from "../-hooks/use-withdraw-sol";
+import { parseSolAmountToLamports } from "../-lib/blackwidow-solana";
 import { SIMULATION_PHASES, type SimulationPhase } from "../-utils/entities";
-import { formatSol } from "../-utils/format-sol";
+import { formatLamports, formatLamportsInput, formatSol } from "../-utils/format-sol";
 import { WalletButton } from "../../-components/wallet-button";
 
 interface WalletCardProps {
@@ -36,29 +39,89 @@ const PHASE_LABEL_KEY = {
   reallocating: "demo.deploy_status_reallocating",
 } as const;
 
+function tryParseLamports(value: string) {
+  if (value.trim().length === 0) return null;
+
+  try {
+    return parseSolAmountToLamports(value);
+  } catch {
+    return null;
+  }
+}
+
+type LastTransaction = {
+  explorerUrl: string;
+  labelKey: "demo.deposit_status_confirmed" | "demo.withdraw_status_confirmed";
+};
+
 export function WalletCard({ simulationPhase, onDeploy }: WalletCardProps) {
-  const { t } = useI18n(["common", "form"]);
+  const { t } = useI18n(["common"]);
   const { publicKey, connected } = useWallet();
   const { data: balance, isFetching: balanceLoading } = useSolBalance();
+  const withdrawAvailability = useWithdrawAvailability();
   const depositSol = useDepositSol();
+  const withdrawSol = useWithdrawSol();
   const [amountSol, setAmountSol] = useState("0.05");
-  const [lastDeposit, setLastDeposit] = useState<DepositSolResult | null>(null);
+  const [lastTransaction, setLastTransaction] = useState<LastTransaction | null>(null);
 
   const isAllocating = simulationPhase === SIMULATION_PHASES.ALLOCATING;
   const isDepositing = depositSol.isPending;
-  const submitDisabled = isAllocating || isDepositing || amountSol.trim().length === 0;
+  const isWithdrawing = withdrawSol.isPending;
+  const isProcessing = isAllocating || isDepositing || isWithdrawing;
+  const amountLamports = tryParseLamports(amountSol);
+  const withdrawableLamports = withdrawAvailability.data?.withdrawableLamports ?? 0n;
+  const hasWithdrawAvailability = withdrawAvailability.data !== undefined;
+  const amountExceedsWithdrawable =
+    hasWithdrawAvailability &&
+    withdrawableLamports > 0n &&
+    amountLamports !== null &&
+    amountLamports > withdrawableLamports;
+  const depositDisabled = isProcessing || amountLamports === null;
+  const withdrawDisabled =
+    depositDisabled ||
+    withdrawAvailability.isLoading ||
+    withdrawAvailability.isError ||
+    withdrawableLamports <= 0n ||
+    amountExceedsWithdrawable;
   const depositError = depositSol.error instanceof Error ? depositSol.error.message : null;
+  const withdrawError = withdrawSol.error instanceof Error ? withdrawSol.error.message : null;
+  const transactionError = depositError ?? withdrawError;
 
   async function handleDeposit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setLastDeposit(null);
+    setLastTransaction(null);
 
     try {
       const result = await depositSol.mutateAsync(amountSol);
-      setLastDeposit(result);
+      setLastTransaction({
+        explorerUrl: result.explorerUrl,
+        labelKey: "demo.deposit_status_confirmed",
+      });
       onDeploy();
     } catch {
       // The mutation state renders the actionable error below the button.
+    }
+  }
+
+  async function handleWithdraw() {
+    if (withdrawDisabled) return;
+
+    setLastTransaction(null);
+
+    try {
+      const result = await withdrawSol.mutateAsync(amountSol);
+      setLastTransaction({
+        explorerUrl: result.explorerUrl,
+        labelKey: "demo.withdraw_status_confirmed",
+      });
+    } catch {
+      // The mutation state renders the actionable error below the button.
+    }
+  }
+
+  function handleUseMaxWithdraw() {
+    if (withdrawableLamports > 0n) {
+      setAmountSol(formatLamportsInput(withdrawableLamports));
     }
   }
 
@@ -99,6 +162,40 @@ export function WalletCard({ simulationPhase, onDeploy }: WalletCardProps) {
             </p>
           </div>
 
+          <div className="border-border grid grid-cols-2 gap-3 border-t pt-4">
+            <div>
+              <p className="text-muted-foreground mb-1 font-mono text-xs">
+                {t("demo.allocated_label")}
+              </p>
+              <p className="font-mono text-sm text-white">
+                {withdrawAvailability.isLoading
+                  ? t("demo.balance_loading")
+                  : formatLamports(withdrawAvailability.data?.allocatedLamports)}
+              </p>
+            </div>
+
+            <div>
+              <div className="mb-1 flex items-center justify-between gap-2">
+                <p className="text-muted-foreground font-mono text-xs">
+                  {t("demo.withdraw_available_label")}
+                </p>
+                <button
+                  type="button"
+                  className="text-primary font-mono text-xs hover:underline disabled:text-white/30 disabled:no-underline"
+                  disabled={withdrawableLamports <= 0n || isProcessing}
+                  onClick={handleUseMaxWithdraw}
+                >
+                  {t("demo.max_button")}
+                </button>
+              </div>
+              <p className="font-mono text-sm text-white">
+                {withdrawAvailability.isLoading
+                  ? t("demo.balance_loading")
+                  : formatLamports(withdrawAvailability.data?.withdrawableLamports)}
+              </p>
+            </div>
+          </div>
+
           <form className="border-border space-y-3 border-t pt-4" onSubmit={handleDeposit}>
             <div>
               <label
@@ -114,7 +211,7 @@ export function WalletCard({ simulationPhase, onDeploy }: WalletCardProps) {
                   inputMode="decimal"
                   value={amountSol}
                   onChange={(event) => setAmountSol(event.target.value)}
-                  disabled={isAllocating || isDepositing}
+                  disabled={isProcessing}
                   className="min-w-0 flex-1 bg-transparent font-mono text-sm text-white outline-none disabled:opacity-60"
                   placeholder="0.05"
                 />
@@ -125,37 +222,66 @@ export function WalletCard({ simulationPhase, onDeploy }: WalletCardProps) {
               </p>
             </div>
 
-            <Button className="w-full" type="submit" disabled={submitDisabled}>
-              {isDepositing ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" />
-                  {t("demo.deposit_status_pending")}
-                </>
-              ) : isAllocating ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" />
-                  {t("demo.deploy_status_allocating")}
-                </>
-              ) : (
-                <>
-                  <Zap size={14} />
-                  {t("form:actions.deploy_capital")}
-                </>
-              )}
-            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <Button type="submit" disabled={depositDisabled}>
+                {isDepositing ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    {t("demo.deposit_status_pending")}
+                  </>
+                ) : isAllocating ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    {t("demo.deploy_status_allocating")}
+                  </>
+                ) : (
+                  <>
+                    <ArrowDownToLine size={14} />
+                    {t("demo.deposit_button")}
+                  </>
+                )}
+              </Button>
 
-            {depositError && (
-              <p className="text-destructive font-mono text-xs leading-5">{depositError}</p>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={withdrawDisabled}
+                onClick={handleWithdraw}
+              >
+                {isWithdrawing ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    {t("demo.withdraw_status_pending")}
+                  </>
+                ) : (
+                  <>
+                    <ArrowUpFromLine size={14} />
+                    {t("demo.withdraw_button")}
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {transactionError && (
+              <p className="text-destructive font-mono text-xs leading-5">{transactionError}</p>
             )}
 
-            {lastDeposit && (
+            {amountExceedsWithdrawable && (
+              <p className="text-muted-foreground font-mono text-xs leading-5">
+                {t("demo.withdraw_limit_message", {
+                  amount: formatLamports(withdrawableLamports),
+                })}
+              </p>
+            )}
+
+            {lastTransaction && (
               <a
-                href={lastDeposit.explorerUrl}
+                href={lastTransaction.explorerUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="text-primary inline-flex items-center gap-1.5 font-mono text-xs hover:underline"
               >
-                {t("demo.deposit_status_confirmed")}
+                {t(lastTransaction.labelKey)}
                 <ExternalLink size={12} />
               </a>
             )}

@@ -5,15 +5,15 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { env } from "#/env";
 
 import {
-  buildDepositSolTransaction,
+  buildWithdrawSolTransaction,
   parseSolAmountToLamports,
-  type DepositSolTransaction,
+  type WithdrawSolTransaction,
 } from "../-lib/blackwidow-solana";
 import { formatSimulationError, formatWalletError } from "./solana-transaction-errors";
 import { solBalanceKey } from "./use-sol-balance";
 import { withdrawAvailabilityKey } from "./use-withdraw-availability";
 
-export interface DepositSolResult extends DepositSolTransaction {
+export interface WithdrawSolResult extends WithdrawSolTransaction {
   owner: PublicKey;
   signature: string;
   explorerUrl: string;
@@ -25,36 +25,38 @@ function getExplorerUrl(signature: string) {
   return `https://explorer.solana.com/tx/${signature}${clusterParam}`;
 }
 
-export function useDepositSol() {
+export function useWithdrawSol() {
   const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (amountSol: string): Promise<DepositSolResult> => {
+    mutationFn: async (amountSol: string): Promise<WithdrawSolResult> => {
       if (!publicKey) {
-        throw new Error("Connect your wallet before depositing.");
+        throw new Error("Connect your wallet before withdrawing.");
       }
 
       try {
         const amountLamports = parseSolAmountToLamports(amountSol);
-        const deposit = await buildDepositSolTransaction({
+        const withdraw = await buildWithdrawSolTransaction({
           connection,
           owner: publicKey,
           amountLamports,
         });
         const latestBlockhash = await connection.getLatestBlockhash("confirmed");
 
-        deposit.transaction.feePayer = publicKey;
-        deposit.transaction.recentBlockhash = latestBlockhash.blockhash;
+        withdraw.transaction.feePayer = publicKey;
+        withdraw.transaction.recentBlockhash = latestBlockhash.blockhash;
+        withdraw.transaction.partialSign(...withdraw.signers);
 
-        const simulation = await connection.simulateTransaction(deposit.transaction);
+        const simulation = await connection.simulateTransaction(withdraw.transaction);
         if (simulation.value.err) {
           throw new Error(formatSimulationError(simulation.value.err, simulation.value.logs));
         }
 
-        const signature = await sendTransaction(deposit.transaction, connection, {
+        const signature = await sendTransaction(withdraw.transaction, connection, {
           preflightCommitment: "confirmed",
+          signers: withdraw.signers,
         });
 
         const confirmation = await connection.confirmTransaction(
@@ -71,7 +73,7 @@ export function useDepositSol() {
         }
 
         return {
-          ...deposit,
+          ...withdraw,
           owner: publicKey,
           signature,
           explorerUrl: getExplorerUrl(signature),

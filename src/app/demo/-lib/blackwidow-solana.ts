@@ -1,5 +1,7 @@
 import {
+  Keypair,
   PublicKey,
+  SYSVAR_RENT_PUBKEY,
   SystemProgram,
   Transaction,
   TransactionInstruction,
@@ -14,6 +16,7 @@ export const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey(
 );
 
 const LAMPORTS_PER_SOL = 1_000_000_000n;
+const TOKEN_ACCOUNT_SIZE = 165;
 const U64_MAX = (1n << 64n) - 1n;
 const DEFAULT_DEPOSIT_SLIPPAGE_BPS = 50n;
 
@@ -38,6 +41,7 @@ const VAULT_AUTHORITY_SEED = Uint8Array.of(
 
 const VAULT_STATE_DISCRIMINATOR = Uint8Array.of(228, 196, 82, 165, 98, 210, 235, 152);
 const DEPOSIT_DISCRIMINATOR = Uint8Array.of(242, 35, 198, 137, 82, 225, 242, 182);
+const REDEEM_IDLE_DISCRIMINATOR = Uint8Array.of(232, 226, 213, 25, 188, 71, 117, 88);
 
 type InstructionData = NonNullable<ConstructorParameters<typeof TransactionInstruction>[0]["data"]>;
 
@@ -69,6 +73,17 @@ export interface BuildDepositSolTransactionParams {
   minShares?: bigint;
 }
 
+export interface BuildWithdrawSolTransactionParams {
+  connection: Connection;
+  owner: PublicKey;
+  amountLamports: bigint;
+}
+
+export interface GetWithdrawAvailabilityParams {
+  connection: Connection;
+  owner: PublicKey;
+}
+
 export interface DepositSolTransaction {
   transaction: Transaction;
   vault: PublicKey;
@@ -79,6 +94,34 @@ export interface DepositSolTransaction {
   amountLamports: bigint;
   expectedShares: bigint;
   minShares: bigint;
+}
+
+export interface WithdrawSolTransaction {
+  transaction: Transaction;
+  signers: Keypair[];
+  vault: PublicKey;
+  vaultAuthority: PublicKey;
+  vaultState: VaultState;
+  ownerWrappedSolAccount: PublicKey;
+  ownerShareTokenAccount: PublicKey;
+  amountLamports: bigint;
+  shares: bigint;
+  expectedAssets: bigint;
+  minAssets: bigint;
+}
+
+export interface WithdrawAvailability {
+  vault: PublicKey;
+  vaultAuthority: PublicKey;
+  vaultState: VaultState;
+  ownerShareTokenAccount: PublicKey;
+  ownerShares: bigint;
+  redeemableShares: bigint;
+  shareSupply: bigint;
+  allocatedLamports: bigint;
+  withdrawableLamports: bigint;
+  idleLamports: bigint;
+  totalAssetsLamports: bigint;
 }
 
 function asInstructionData(bytes: Uint8Array): InstructionData {
@@ -118,8 +161,40 @@ function calculateExpectedShares(amount: bigint, vaultState: VaultState, shareSu
   return (amount * shareSupply) / totalAssets;
 }
 
+function calculateSharesForAssets(amount: bigint, vaultState: VaultState, shareSupply: bigint) {
+  const totalAssets = vaultState.totalIdle + vaultState.totalDeployed;
+
+  if (shareSupply === 0n || totalAssets === 0n) {
+    throw new Error("Vault has no shares available to redeem.");
+  }
+
+  return (amount * shareSupply + totalAssets - 1n) / totalAssets;
+}
+
+function calculateExpectedAssets(shares: bigint, vaultState: VaultState, shareSupply: bigint) {
+  const totalAssets = vaultState.totalIdle + vaultState.totalDeployed;
+
+  if (shareSupply === 0n) {
+    throw new Error("Vault has no shares available to redeem.");
+  }
+
+  return (shares * totalAssets) / shareSupply;
+}
+
+function calculateMaxSharesForAssets(assets: bigint, totalAssets: bigint, shareSupply: bigint) {
+  if (assets <= 0n || totalAssets <= 0n || shareSupply <= 0n) {
+    return 0n;
+  }
+
+  return ((assets + 1n) * shareSupply - 1n) / totalAssets;
+}
+
 function applySlippage(value: bigint, slippageBps = DEFAULT_DEPOSIT_SLIPPAGE_BPS) {
   return (value * (10_000n - slippageBps)) / 10_000n;
+}
+
+function minBigint(...values: bigint[]) {
+  return values.reduce((min, value) => (value < min ? value : min));
 }
 
 export function parseSolAmountToLamports(value: string) {
@@ -134,10 +209,10 @@ export function parseSolAmountToLamports(value: string) {
     BigInt(wholePart || "0") * LAMPORTS_PER_SOL + BigInt((fractionPart + "000000000").slice(0, 9));
 
   if (lamports <= 0n) {
-    throw new Error("Deposit amount must be greater than zero.");
+    throw new Error("Amount must be greater than zero.");
   }
 
-  assertU64(lamports, "Deposit amount");
+  assertU64(lamports, "Amount");
   return lamports;
 }
 
@@ -240,6 +315,39 @@ export function createSyncNativeInstruction(account: PublicKey) {
   });
 }
 
+export function createInitializeTokenAccountInstruction(
+  account: PublicKey,
+  mint: PublicKey,
+  owner: PublicKey,
+) {
+  return new TransactionInstruction({
+    programId: TOKEN_PROGRAM_ID,
+    keys: [
+      { pubkey: account, isSigner: false, isWritable: true },
+      { pubkey: mint, isSigner: false, isWritable: false },
+      { pubkey: owner, isSigner: false, isWritable: false },
+      { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+    ],
+    data: asInstructionData(Uint8Array.of(1)),
+  });
+}
+
+export function createCloseTokenAccountInstruction(
+  account: PublicKey,
+  destination: PublicKey,
+  owner: PublicKey,
+) {
+  return new TransactionInstruction({
+    programId: TOKEN_PROGRAM_ID,
+    keys: [
+      { pubkey: account, isSigner: false, isWritable: true },
+      { pubkey: destination, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: true, isWritable: false },
+    ],
+    data: asInstructionData(Uint8Array.of(9)),
+  });
+}
+
 export function createDepositInstruction(params: {
   owner: PublicKey;
   vault: PublicKey;
@@ -270,6 +378,113 @@ export function createDepositInstruction(params: {
     ],
     data: asInstructionData(data),
   });
+}
+
+export function createRedeemIdleInstruction(params: {
+  owner: PublicKey;
+  vault: PublicKey;
+  vaultAuthority: PublicKey;
+  shareMint: PublicKey;
+  vaultIdleTokenAccount: PublicKey;
+  ownerAssetTokenAccount: PublicKey;
+  ownerShareTokenAccount: PublicKey;
+  shares: bigint;
+  minAssets: bigint;
+}) {
+  const data = new Uint8Array(24);
+  data.set(REDEEM_IDLE_DISCRIMINATOR, 0);
+  writeU64(params.shares, data, 8);
+  writeU64(params.minAssets, data, 16);
+
+  return new TransactionInstruction({
+    programId: BLACKWIDOW_PROGRAM_ID,
+    keys: [
+      { pubkey: params.owner, isSigner: true, isWritable: false },
+      { pubkey: params.vault, isSigner: false, isWritable: true },
+      { pubkey: params.vaultAuthority, isSigner: false, isWritable: false },
+      { pubkey: params.shareMint, isSigner: false, isWritable: true },
+      { pubkey: params.vaultIdleTokenAccount, isSigner: false, isWritable: true },
+      { pubkey: params.ownerAssetTokenAccount, isSigner: false, isWritable: true },
+      { pubkey: params.ownerShareTokenAccount, isSigner: false, isWritable: true },
+      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+    ],
+    data: asInstructionData(data),
+  });
+}
+
+function readTokenAccountAmount(data: Uint8Array) {
+  if (data.byteLength < 72) {
+    throw new Error("Invalid token account data.");
+  }
+
+  return readU64(data, 64);
+}
+
+export async function getWithdrawAvailability({
+  connection,
+  owner,
+}: GetWithdrawAvailabilityParams): Promise<WithdrawAvailability> {
+  const { vault, vaultAuthority, account: vaultState } = await getSolVaultState(connection);
+
+  if (!vaultState) {
+    throw new Error("SOL vault is not initialized on this cluster.");
+  }
+
+  if (!vaultState.assetMint.equals(NATIVE_MINT)) {
+    throw new Error("Configured vault is not a SOL vault.");
+  }
+
+  const ownerShareTokenAccount = findAssociatedTokenAddress(owner, vaultState.shareMint);
+  const [shareSupplyResponse, ownerShareTokenAccountInfo] = await Promise.all([
+    connection.getTokenSupply(vaultState.shareMint, "confirmed"),
+    connection.getAccountInfo(ownerShareTokenAccount, "confirmed"),
+  ]);
+  const ownerShares = ownerShareTokenAccountInfo
+    ? readTokenAccountAmount(ownerShareTokenAccountInfo.data)
+    : 0n;
+  const shareSupply = BigInt(shareSupplyResponse.value.amount);
+  const totalAssetsLamports = vaultState.totalIdle + vaultState.totalDeployed;
+
+  if (shareSupply === 0n || totalAssetsLamports === 0n || ownerShares === 0n) {
+    return {
+      vault,
+      vaultAuthority,
+      vaultState,
+      ownerShareTokenAccount,
+      ownerShares,
+      redeemableShares: 0n,
+      shareSupply,
+      allocatedLamports: 0n,
+      withdrawableLamports: 0n,
+      idleLamports: vaultState.totalIdle,
+      totalAssetsLamports,
+    };
+  }
+
+  const allocatedLamports = calculateExpectedAssets(ownerShares, vaultState, shareSupply);
+  const maxSharesByIdle = calculateMaxSharesForAssets(
+    vaultState.totalIdle,
+    totalAssetsLamports,
+    shareSupply,
+  );
+  const redeemableShares = minBigint(ownerShares, shareSupply, maxSharesByIdle);
+  const withdrawableLamports = vaultState.withdrawalsPaused
+    ? 0n
+    : calculateExpectedAssets(redeemableShares, vaultState, shareSupply);
+
+  return {
+    vault,
+    vaultAuthority,
+    vaultState,
+    ownerShareTokenAccount,
+    ownerShares,
+    redeemableShares,
+    shareSupply,
+    allocatedLamports,
+    withdrawableLamports,
+    idleLamports: vaultState.totalIdle,
+    totalAssetsLamports,
+  };
 }
 
 export async function buildDepositSolTransaction({
@@ -345,5 +560,82 @@ export async function buildDepositSolTransaction({
     amountLamports,
     expectedShares,
     minShares: depositMinShares,
+  };
+}
+
+export async function buildWithdrawSolTransaction({
+  connection,
+  owner,
+  amountLamports,
+}: BuildWithdrawSolTransactionParams): Promise<WithdrawSolTransaction> {
+  assertU64(amountLamports, "Withdraw amount");
+
+  const availability = await getWithdrawAvailability({ connection, owner });
+  const { vault, vaultAuthority, vaultState, ownerShareTokenAccount } = availability;
+
+  if (vaultState.withdrawalsPaused) {
+    throw new Error("Withdrawals are paused for this vault.");
+  }
+
+  if (availability.withdrawableLamports <= 0n) {
+    throw new Error("No SOL is available to withdraw from this wallet.");
+  }
+
+  if (amountLamports > availability.withdrawableLamports) {
+    throw new Error("Withdraw amount exceeds the available withdraw balance.");
+  }
+
+  const shareSupply = availability.shareSupply;
+  const shares = calculateSharesForAssets(amountLamports, vaultState, shareSupply);
+  const expectedAssets = calculateExpectedAssets(shares, vaultState, shareSupply);
+
+  assertU64(shares, "Shares");
+  assertU64(expectedAssets, "Expected assets");
+
+  if (vaultState.totalIdle < expectedAssets) {
+    throw new Error("Vault does not have enough idle SOL liquidity for this withdrawal.");
+  }
+
+  if (availability.ownerShares < shares) {
+    throw new Error("Not enough Blackwidow shares for this withdrawal amount.");
+  }
+
+  const ownerWrappedSolAccount = Keypair.generate();
+  const rentLamports = await connection.getMinimumBalanceForRentExemption(TOKEN_ACCOUNT_SIZE);
+  const transaction = new Transaction().add(
+    SystemProgram.createAccount({
+      fromPubkey: owner,
+      newAccountPubkey: ownerWrappedSolAccount.publicKey,
+      lamports: rentLamports,
+      space: TOKEN_ACCOUNT_SIZE,
+      programId: TOKEN_PROGRAM_ID,
+    }),
+    createInitializeTokenAccountInstruction(ownerWrappedSolAccount.publicKey, NATIVE_MINT, owner),
+    createRedeemIdleInstruction({
+      owner,
+      vault,
+      vaultAuthority,
+      shareMint: vaultState.shareMint,
+      vaultIdleTokenAccount: vaultState.idleTokenAccount,
+      ownerAssetTokenAccount: ownerWrappedSolAccount.publicKey,
+      ownerShareTokenAccount,
+      shares,
+      minAssets: amountLamports,
+    }),
+    createCloseTokenAccountInstruction(ownerWrappedSolAccount.publicKey, owner, owner),
+  );
+
+  return {
+    transaction,
+    signers: [ownerWrappedSolAccount],
+    vault,
+    vaultAuthority,
+    vaultState,
+    ownerWrappedSolAccount: ownerWrappedSolAccount.publicKey,
+    ownerShareTokenAccount,
+    amountLamports,
+    shares,
+    expectedAssets,
+    minAssets: amountLamports,
   };
 }
